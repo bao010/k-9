@@ -3,27 +3,34 @@ package com.fsck.k9.helper;
 
 import org.htmlcleaner.CleanerProperties;
 import org.htmlcleaner.HtmlCleaner;
+import org.htmlcleaner.HtmlSerializer;
 import org.htmlcleaner.SimpleHtmlSerializer;
 import org.htmlcleaner.TagNode;
 
 
 public class HtmlSanitizer {
+    private static final HtmlCleaner HTML_CLEANER;
+    private static final HtmlSerializer HTML_SERIALIZER;
+
+    static {
+        CleanerProperties properties = createCleanerProperties();
+        HTML_CLEANER = new HtmlCleaner(properties);
+        HTML_SERIALIZER = new SimpleHtmlSerializer(properties);
+    }
+
+
     private HtmlSanitizer() {}
 
     public static String sanitize(String html) {
-        HtmlCleaner cleaner = new HtmlCleaner();
-        CleanerProperties properties = setUpCleanerProperties(cleaner);
-
-        TagNode rootNode = cleaner.clean(html);
+        TagNode rootNode = HTML_CLEANER.clean(html);
 
         removeMetaRefresh(rootNode);
 
-        SimpleHtmlSerializer htmlSerializer = new SimpleHtmlSerializer(properties);
-        return htmlSerializer.getAsString(rootNode, "UTF8");
+        return HTML_SERIALIZER.getAsString(rootNode, "UTF8");
     }
 
-    private static CleanerProperties setUpCleanerProperties(HtmlCleaner cleaner) {
-        CleanerProperties properties = cleaner.getProperties();
+    private static CleanerProperties createCleanerProperties() {
+        CleanerProperties properties = new CleanerProperties();
 
         // See http://htmlcleaner.sourceforge.net/parameters.php for descriptions
         properties.setNamespacesAware(false);
